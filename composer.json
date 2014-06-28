@@ -1,0 +1,20 @@
+{
+    "name": "roeltz/image",
+    "license": "MIT",
+    "description": "Straightforward image manipulation library",
+    "authors": [
+        {
+            "name": "Leonardo Rothe Tagliafico",
+            "email": "leo_rothe@msn.com",
+            "homepage": "http://leorothe.com/"
+        }
+    ],
+    "autoload": {
+    	"psr-0": {
+    		"Roeltz\\Image\\": "src/"
+    	}
+    },
+    "require": {
+    	"php": ">=5.3.0"
+    }
+}
