@@ -111,6 +111,12 @@ class Image {
 		return $this->rescale($x);
 	}
 	
+	function resize($width, $height) {
+		$image = self::blank($width, $height);
+		imagecopyresampled($image->resource, $this->resource, 0, 0, 0, 0, $width, $height, $this->width, $this->height);
+		return $image;
+	}
+	
 	function saveAsPNG($path) {
 		imagepng($this->resource, $path);
 	}
