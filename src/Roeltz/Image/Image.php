@@ -11,21 +11,54 @@ class Image {
 	function __construct($resource) {
 		$this->resource = $resource;
 		$this->width = imagesx($this->resource);
-		$this->height = imagesy($this->resource);		
+		$this->height = imagesy($this->resource);
 	}
 
 	static function blank($width, $height, Color $color = null) {
 		$resource = imagecreatetruecolor($width, $height);
 		imagealphablending($resource, false);
 		imagesavealpha($resource, true);
-		if (!$color)
+
+		if (!$color) {
 			$color = new Color(0, 0, 0, 0);
+		}
+
 		imagefill($resource, 0, 0, imagecolorallocatealpha($resource, $color->r, $color->g, $color->b, 127 - floor($color->a / 2)));
 		return new Image($resource);
+	}
+
+	static function fixEXIFOrientation($resource, $path) {
+		$exif = @exif_read_data($path, "IFD0");
+		$exif = @array_change_key_case($exif, CASE_LOWER);
+
+		switch (@$exif["orientation"]) {
+			case 2:
+				imageflip($resource, IMG_FLIP_HORIZONTAL);
+				break;
+			case 3:
+				imageflip($resource, IMG_FLIP_BOTH);
+				break;
+			case 4:
+				imageflip($resource, IMG_FLIP_VERTICAL);
+				break;
+			case 5:
+				imageflip($resource, IMG_FLIP_VERTICAL);
+			case 6:
+				$resource = imagerotate($resource, -90, 0);
+				break;
+			case 7:
+				imageflip($resource, IMG_FLIP_VERTICAL);
+			case 8:
+				$resource = imagerotate($resource, 90, 0);
+				break;
+		}
+
+		return $resource;
 	}
 	
 	static function fromPath($path) {
 		$info = getimagesize($path);
+
 		switch($info["mime"]) {
 			case "image/png":
 				$resource = imagecreatefrompng($path);
@@ -36,9 +69,14 @@ class Image {
 			case "image/gif":
 				$resource = imagecreatefromgif($path);
 				break;
+			case "image/webp":
+				$resource = imagecreatefromwebp($path);
+				break;
 		}
+
 		imagealphablending($resource, true);
 		imagesavealpha($resource, true);
+		$resource = self::fixEXIFOrientation($resource, $path);
 		$image = new Image($resource);
 		$image->file = $path;
 		return $image;
@@ -83,10 +121,11 @@ class Image {
 	}
 	
 	function rescaleToMaxWidth($width) {
-		if ($width < $this->width)
+		if ($width < $this->width) {
 			return $this->rescaleToWidth($width);
-		else
+		} else {
 			return $this;
+		}
 	}
 
 	function rescaleToHeight($height) {
@@ -95,10 +134,11 @@ class Image {
 	}
 
 	function rescaleToMaxHeight($height) {
-		if ($height < $this->height)
+		if ($height < $this->height) {
 			return $this->rescaleToHeight($height);
-		else
+		} else {
 			return $this;
+		}
 	}
 
 	function rescaleToContain($pixels) {
@@ -123,5 +163,9 @@ class Image {
 
 	function saveAsJPEG($path, $quality = 80) {
 		imagejpeg($this->resource, $path, $quality);
+	}
+
+	function saveAsWebP($path, $quality = 80) {
+		imagewebp($this->resource, $path, $quality);
 	}
 }
