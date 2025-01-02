@@ -29,28 +29,31 @@ class Image {
 
 	static function fixEXIFOrientation($resource, $path) {
 		$exif = @exif_read_data($path, "IFD0");
-		$exif = @array_change_key_case($exif, CASE_LOWER);
 
-		switch (@$exif["orientation"]) {
-			case 2:
-				imageflip($resource, IMG_FLIP_HORIZONTAL);
-				break;
-			case 3:
-				imageflip($resource, IMG_FLIP_BOTH);
-				break;
-			case 4:
-				imageflip($resource, IMG_FLIP_VERTICAL);
-				break;
-			case 5:
-				imageflip($resource, IMG_FLIP_VERTICAL);
-			case 6:
-				$resource = imagerotate($resource, -90, 0);
-				break;
-			case 7:
-				imageflip($resource, IMG_FLIP_VERTICAL);
-			case 8:
-				$resource = imagerotate($resource, 90, 0);
-				break;
+		if ($exif) {
+			$exif = @array_change_key_case($exif, CASE_LOWER);
+
+			switch (@$exif["orientation"]) {
+				case 2:
+					imageflip($resource, IMG_FLIP_HORIZONTAL);
+					break;
+				case 3:
+					imageflip($resource, IMG_FLIP_BOTH);
+					break;
+				case 4:
+					imageflip($resource, IMG_FLIP_VERTICAL);
+					break;
+				case 5:
+					imageflip($resource, IMG_FLIP_VERTICAL);
+				case 6:
+					$resource = imagerotate($resource, -90, 0);
+					break;
+				case 7:
+					imageflip($resource, IMG_FLIP_VERTICAL);
+				case 8:
+					$resource = imagerotate($resource, 90, 0);
+					break;
+			}
 		}
 
 		return $resource;
